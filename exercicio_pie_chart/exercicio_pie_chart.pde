@@ -11,6 +11,7 @@ void setup()
  raiocir=min(width,height)/2; 
  ellipse(centrox,centroy ,raiocir, raiocir); 
  raiopie=raiocir/2;
+ noLoop();
  
 } 
  
