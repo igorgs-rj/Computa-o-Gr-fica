@@ -5,41 +5,53 @@ from math import*
 
 r=1.0
 h=3.0
-n=input("Qual o numero de lados da base da piramide?")
-ang=(2*pi)/n
+
 
 vertices=[[0,h,0]]
 linhas=[]
 faces=[]
 aux=[]
 
-for i in range(0,n):
-    c0 = r * cos(ang * i)
-    c1 = r * sin(ang * i)
-    vertices += [[c0, -h / 2, c1]]
-
-linhas +=[[0, 1]]
-linhas +=[[1, n]]
-for i in range(2,n+1):
-    linhas += [[i-1, i]]
-    linhas += [[0, i]]
-
-for i in range(1,n):
-    faces += [[i + 1, i, 0]]
-
-faces+=[[n, 1, 0]]
-for i in range(1, n + 1):
-    aux += [i]
-faces += [aux]
-
-
 #print(vertices)
 #print(linhas)
 #print(faces)
 
-
-
 cores = ((1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 0, 1), (0.5, 1, 1), (1, 0, 0.5),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1))
+
+def keyPressed(tecla, x, y):
+    print(tecla)
+    if tecla == '4'or tecla == '5'or tecla == '6'or tecla == '7'or tecla == '8'or tecla == '9':
+        Red(int(tecla))
+
+cores = ((1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 0, 1), (0.5, 1, 1), (1, 0, 0.5),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 0, 1), (0.5, 1, 1), (1, 0, 0.5),(1, 0, 0), (1, 1, 0),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1))
+
+
+
+def Red(n):
+    global vertices,linhas,faces,aux,h,r
+    vertices = [[0, h, 0]]
+    linhas = []
+    faces = []
+    aux = []
+    ang = (2 * pi) / n
+    for i in range(0, n):
+        c0 = r * cos(ang * i)
+        c1 = r * sin(ang * i)
+        vertices += [[c0, -h / 2, c1]]
+
+    linhas += [[0, 1]]
+    linhas += [[1, n]]
+    for i in range(2, n + 1):
+        linhas += [[i - 1, i]]
+        linhas += [[0, i]]
+
+    for i in range(1, n):
+        faces += [[i + 1, i, 0]]
+
+    faces += [[n, 1, 0]]
+    for i in range(1, n + 1):
+        aux += [i]
+    faces += [aux]
 
 
 def Pol():
@@ -75,6 +87,7 @@ def timer(i):
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE)
 glutInitWindowSize(800, 600) #define a dimensao do janela
+Red(3)
 glutCreateWindow("Pol")  #nome da janela
 glutDisplayFunc(display)  #funcao de callback para repintar a tela
 glEnable(GL_MULTISAMPLE)
@@ -83,5 +96,6 @@ glClearColor(0., 0., 0., 1.)
 gluPerspective(45, 800.0 / 600.0, 0.1, 50.0) #modifica a pespectiva
 glTranslatef(0.0, 0.0, -10) #translacao da cena no eixo x ,y ,z
 glRotatef(45, 1, 1, 1)       #
+glutKeyboardFunc(keyPressed)
 glutTimerFunc(50, timer, 1) #redesenha a janela ao chamar a funcao timer
 glutMainLoop()
