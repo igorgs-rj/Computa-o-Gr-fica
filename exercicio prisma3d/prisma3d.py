@@ -6,46 +6,13 @@ from math import*
 r=1.0
 h=3.0
 
+vertices = []
+linhas = []
+faces = []
+aux1 = []
+aux2 = []
 
-n=input("Qual o numero de lados da base do prisma?")
 
-
-ang=(2*pi)/n
-
-vertices=[]
-linhas=[]
-faces=[]
-aux1=[]
-aux2=[]
-
-for i in range(0,n):
-    c0 = r * cos(ang * i)
-    c1 = r * sin(ang * i)
-    vertices += [[c0, -h / 2, c1]]
-    vertices += [[c0, h, c1]]
-linhas += [[0,(n*2)-2]]
-linhas += [[1,(n*2)-1]]
-y=0
-for i in range(1,n):
-    linhas += [[y, y+1]]
-    linhas += [[y, y+2]]
-    linhas += [[y+1, y + 3]]
-    y+=2
-c=0
-for i in range(1,n):
-    faces += [[c, c+1, c+2,c+3]]
-    c+=2
-faces+=[[0,1,(n*2)-1,(n*2)-2]]
-a=0
-b=1
-for i in range(1,n):
-    aux1 += [a]
-    aux2 += [b]
-    a+=2
-    b+=2
-
-faces += [aux1]
-faces += [aux2]
 
 
 #print(vertices)
@@ -53,12 +20,49 @@ faces += [aux2]
 #print(faces)
 
 def keyPressed(tecla, x, y):
-    global n
+    print(tecla)
     if tecla == '3' or tecla == '4'or tecla == '5'or tecla == '6'or tecla == '7'or tecla == '8'or tecla == '9':
-        n=int(tecla)
+        Red(int(tecla))
 
 cores = ((1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 0, 1), (0.5, 1, 1), (1, 0, 0.5),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 1, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1), (1, 0, 1), (0.5, 1, 1), (1, 0, 0.5),(1, 0, 0), (1, 1, 0),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1),(1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 1, 1))
 
+def Red(n):
+    global vertices,linhas,faces,aux1,aux2,r,h
+    ang = (2 * pi) / n
+    vertices = []
+    linhas = []
+    faces = []
+    aux1 = []
+    aux2 = []
+
+    for i in range(0, n):
+        c0 = r * cos(ang * i)
+        c1 = r * sin(ang * i)
+        vertices += [[c0, -h / 2, c1]]
+        vertices += [[c0, h, c1]]
+    linhas += [[0, (n * 2) - 2]]
+    linhas += [[1, (n * 2) - 1]]
+    y = 0
+    for i in range(1, n):
+        linhas += [[y, y + 1]]
+        linhas += [[y, y + 2]]
+        linhas += [[y + 1, y + 3]]
+        y += 2
+    c = 0
+    for i in range(1, n):
+        faces += [[c, c + 1, c + 2, c + 3]]
+        c += 2
+    faces += [[0, 1, (n * 2) - 1, (n * 2) - 2]]
+    a = 0
+    b = 1
+    for i in range(1, n):
+        aux1 += [a]
+        aux2 += [b]
+        a += 2
+        b += 2
+
+    faces += [aux1]
+    faces += [aux2]
 
 
 
@@ -94,14 +98,15 @@ def timer(i):
 # PROGRAMA PRINCIPAL
 
 glutInit(sys.argv)
-glutKeyboardFunc(keyPressed)
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE)
 glutInitWindowSize(800, 600) #define a dimensao do janela
+Red(3)
 glutCreateWindow("Pol")  #nome da janela
 glutDisplayFunc(display)  #funcao de callback para repintar a tela
 glEnable(GL_MULTISAMPLE)
 glEnable(GL_DEPTH_TEST)
 glClearColor(0., 0., 0., 1.)
+glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
 gluPerspective(45, 800.0 / 600.0, 0.1, 50.0) #modifica a pespectiva
 glTranslatef(0.0, 0.0, -10) #translacao da cena no eixo x ,y ,z
 glRotatef(45, 1, 1, 1)       #
