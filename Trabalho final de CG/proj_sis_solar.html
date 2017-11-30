@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script src="TrackballControls.js"></script>
+		<script>
+		
+			//É necessário rodar esse programa num servidor para evitar problemas de cross-domain image.
+			//Eu utilizo o servidor disponibilizado pelo Python(SimpleHTTPServer).
+			//É preciso rodar o comando “python -m SimpleHTTPServer” no cmd(na pasta aonde o script do sistema solar está) para levantar o servidor.
+			//Uma página no localhost:8000(padrão) será criada.Rode o script nessa página.
+
+
+		
+			
+			
+			//É adicionada uma cena.
+			var scene = new THREE.Scene();
+			//É adicionada uma câmera.
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			//É criado um renderizador.
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			
+			//É necessário habilitar o controle de movimentação do mouse e do scroll.Isso é feito ao chamar a função  THREE.TrackballControls(camera)
+			//que foi implementada no arquivo TrackballControls.js.
+			var controls= new THREE.TrackballControls(camera);
+			
+			//É preciso habilitar a função de sombraeamento do renderizador(tendo em vista que o default dessa função é false). 
+			renderer.shadowMapEnabled = true;
+			//Após isso, é possível suavizar a renderização da sombra utilizando uma função de anti-aliasing(THREE.PCFSoftShadowMap). 
+			renderer.shadowMapType = THREE.PCFSoftShadowMap;
+			
+			//Mesh das estrelas(background).
+			var stars;
+			
+			//Após isso é necessário criar as variáveis que irão armazenar as meshes dos planetas.
+			var earth;
+			var venus;
+			var mercury;
+			var saturn;
+			var jupiter;
+			var sun;
+			var moon;
+			var mars;
+			var uranus;
+			var neptune;
+			
+			//É necessário tratar os aneis de saturno e urano de maneira diferente.Isso será abordado mais a frente.
+			var saturn_ring;
+			var uranus_ring;
+			
+			//A câmera é colocada na posição (0,0,400).		
+			camera.position.z =400;
+			
+		
+			
+			
+			
+			//Para carregar as texturas dos planetas é necessário criar uma variável de carregamento de textura(nesse caso é o load).
+			var loader = new THREE.TextureLoader();
+				
+				//Criação do Sol
+				
+				//Primeiro é necessário carregar a imagem do Sol(que está no arquivo '2k_sun.jpg'), essa imagem vai ser armazenada na variável texture.
+				loader.load( 'imagens/2k_sun.jpg', function ( texture ) {
+					//A seguir, é preciso definir a geometria do Sol.O THREE.SphereGeometry irá criar uma esfera(com 35 de raio,
+					//32 de segmentos de largura do círculo*  e 32 de segmentos de altura do círculo[1]).
+					var geometry = new THREE.SphereGeometry( 35, 32, 32 );
+					//Também é preciso armazenar a textura(texture) na variável que armazanará o 'material' do Sol.Nesse caso é utilizado o THREE.MeshBasicMaterial,
+					// que é um tipo de material que não é afetado pela luz[2].
+					var material = new THREE.MeshBasicMaterial ( { map: texture} );
+					//Por fim, o material e a geometria são armazenados na mesh do Sol.
+					sun = new THREE.Mesh( geometry, material );
+					//A mesh é adicionada ao Sol(na posição default  que é (0,0,0)).
+					scene.add( sun );
+				} );
+				
+				//[1]
+				//Não é possível criar uma esfera perfeita no computador, porém é possível criar uma esfera que 'aparenta' ser perfeita.
+				//Isso é feito ao se criar uma esfera segmentada(quanto maiores forem o número de segmentos mais 'perfeita' ela ficará).
+				
+				
+				
+				//É criado um ponto de luz(THREE.PointLight) que possui cor branca suave(0x404040),uma intensidade de luz de 12 e um alcançe de 600.
+				var lightc = new THREE.PointLight( 0x404040, 12, 600 );
+				var lights = new THREE.PointLight( 0x404040, 8, 600 );
+				var lighti = new THREE.PointLight( 0x404040, 8, 600 );
+				//Essa luz é colocada dentro da esfera do Sol (na posiçao (0,0,0)).
+				lightc.position.set(0,0,0);
+				//Essa luz é colocada no topo da esfera do Sol (na posiçao (0,0,0)).
+				lights.position.set(0,35,0);
+				//Essa luz é colocada no fundo da esfera do Sol (na posiçao (0,0,0)).
+				lighti.position.set(0,-35,0);
+				//As  luzes são adicionadas na cena.
+				scene.add( lightc );
+				scene.add( lights );
+				scene.add( lighti );
+				
+				
+				//[2]
+				//Tendo em vista que a luz será colocada dentro do Sol,a mesh deve ser de um tipo de que não interfira na luz(THREE.MeshBasicMaterial).
+				//Se o tipo interfisse na luz(como por EX: THREE.MeshLambertMaterial) o Sol ficaria totalmente sombreando.
+				
+				
+				
+				
+				//Criação de Mercúrio
+				//Mesmo caso do Sol.A únicas diferenças são o  tamanho raio(que é 2),o tipo de material( THREE.MeshLambertMaterial que permite sombreamento)
+				//e a sua posição(45,0,90).
+				loader.load('imagens/mercurymap.jpg', function(texture){
+					
+					var geometry = new THREE.SphereGeometry( 2, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					mercury = new THREE.Mesh( geometry, material );
+					scene.add(mercury);
+					mercury.position.set(45,0,90);
+				} );
+				
+				
+				//Criação de Vénus
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/venusmap.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 4, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					venus = new THREE.Mesh( geometry, material );
+					scene.add(venus);
+					venus.position.set(55,0,165);
+				} );
+				
+				//Criação da Terra
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/earthmap1k.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					earth = new THREE.Mesh( geometry, material );
+					scene.add(earth);
+					earth.position.set(75,0,0);
+				} );
+				
+				//Criação da Lua
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/moonbump1k.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					moon = new THREE.Mesh( geometry, material );
+					scene.add(moon);
+					moon.position.set(82,0,0);
+				} );
+				
+				//Criação de Marte
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/marsmap1k.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 3, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					mars = new THREE.Mesh( geometry, material );
+					scene.add(mars);
+					mars.position.set(95,0,95);
+				} );
+				
+				//Criação de Júpiter
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/jupitermap.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 15, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					jupiter = new THREE.Mesh( geometry, material );
+					scene.add(jupiter);
+					jupiter.position.set(125,0,27);
+				} );
+				
+				//Criação de Saturno
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/saturnmap.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 8, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					saturn = new THREE.Mesh( geometry, material );
+					scene.add(saturn);
+					saturn.position.set(165,0,79);
+				} )
+				
+				
+				//Criação dos aneis de Saturno
+				//É criado um anel que receberá uma textura('saturnringcolor.jpg') 
+				
+				loader.load('imagens/saturnringcolor.jpg', function(texture){
+					//Na função THREE.RingGeometry o anel é criado a passegem dos seguintes parâmetros : raio interno (10),
+					//raio externo(12) e a quantidade de segmentos(32).
+					//O raio interno deve ser a maior que o raio de Saturno (que nesse caso é 8)
+					var geometry = new THREE.RingGeometry( 10, 12, 32 );
+					//A textura é carregada no material nos dois lados do anel (side: THREE.DoubleSide).
+					var material = new THREE.MeshLambertMaterial ( { map: texture, 
+					side: THREE.DoubleSide} );
+					//A mesh do anel é criada
+					saturn_ring = new THREE.Mesh( geometry, material );
+					//A mesh é adicionada na cena
+					scene.add(saturn_ring);
+					//A posição da mesh é definida((165,0,79)
+					//Sua posição deve ser a mesma de Saturno
+					saturn_ring.position.set(165,0,79);
+				} );
+				
+				//Criação de Uranu
+				//Mesmo caso do Mercúrio.
+				
+				loader.load('imagens/uranusmap.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 7, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					uranus = new THREE.Mesh( geometry, material );
+					scene.add(uranus);
+					uranus.position.set(195,0,267);
+				} );
+				
+				
+				//Criação dos aneis de Uranu
+				//Mesmo caso dos aneis de Saturno.
+				loader.load('imagens/uranusringcolour.jpg', function(texture){
+					var geometry = new THREE.RingGeometry( 9, 11, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture, 
+					side: THREE.DoubleSide} );
+					uranus_ring = new THREE.Mesh( geometry, material );
+					scene.add(uranus_ring);
+					uranus_ring.position.set(195,0,267);
+				} );
+				
+				//Criação de Netuno
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/neptunemap.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 7, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					neptune = new THREE.Mesh( geometry, material );
+					scene.add(neptune);
+					neptune.position.set(225,0,192);
+				} );
+				
+				
+				//Criação do planeta anão Plutão
+				//Mesmo caso do Mercúrio.
+				loader.load('imagens/plutomap1k.jpg', function(texture){
+					var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+					var material = new THREE.MeshLambertMaterial ( { map: texture} );
+					pluto = new THREE.Mesh( geometry, material );
+					scene.add(pluto);
+					pluto.position.set(250,0,100);
+				} );
+			
+	
+				//Criação das Estrelas(background)
+				//É armazenada a textura das estrelas
+				
+				loader.load('imagens/galaxy_starfield.png', function(texture){
+						//É criado uma esfera muito grande(ela deve ter um tamanho que torne possível englobar todo o sistema solar)
+						var geometry = new THREE.SphereGeometry(600, 64, 64);
+						//A textura é armazenada no camada interior da esfera(side: THREE.BackSide).
+						//Isso vai dar a sensação de que o background sao as estrelas,pois a câmera estará numa posição dentro desse círculo(0,0,400).
+						var material = new THREE.MeshBasicMaterial ( { map: texture,side: THREE.BackSide} );
+						//A mesh da esfera é criada.
+						stars = new THREE.Mesh( geometry, material );
+						//A esfera é adicionada na posição default (0,0,0).
+						scene.add(stars);
+					} );
+
+			
+			//Caracteristicas de Mercúrio
+			//Posição inicial no eixo x
+			var mercuryOrbitRadius=45;
+			//Posição inicial no eixo z
+			var mercuryOrbitAngle=90;
+			//Velocidade Angular(Ao redor do Sol)
+			var mercuryOrbitSpeed =3;
+			
+			
+			//Caracteristicas de Vénus
+			var venusOrbitRadius=55;
+			var venusOrbitAngle=165;
+			var venusOrbitSpeed =2;
+			
+			//Caracteristicas da Terra
+			var earthOrbitRadius=75;
+			var earthOrbitAngle=0;
+			var earthOrbitSpeed =1.5;
+			
+			//Caracteristicas da Lua
+			var moonOrbitRadius=7;
+			var moonOrbitAngle=0;
+			var moonOrbitSpeed =2.5;
+			
+			//Caracteristicas de Marte
+			var marsOrbitRadius=95;
+			var marsOrbitAngle=95;
+			var marsOrbitSpeed =0.7;
+			
+			//Caracteristicas de Saturno
+			var saturnOrbitRadius=165;
+			var saturnOrbitAngle=27;
+			var saturnOrbitSpeed =0.6;
+			
+			//Caracteristicas dos aneis de Saturno
+			var saturn_ringOrbitRadius=165;
+			var saturn_ringOrbitAngle=27;
+			var saturn_ringOrbitSpeed =0.6;
+			
+			
+			//Caracteristicas de Júpiter
+			var jupiterOrbitRadius=125;
+			var jupiterOrbitAngle=79;
+			var jupiterOrbitSpeed =0.5;
+			
+			
+			//Caracteristicas de Uranu
+			var uranusOrbitRadius=195;
+			var uranusOrbitAngle=267;
+			var uranusOrbitSpeed =0.4;
+			
+			//Caracteristicas dos aneis de Uranu
+			var uranus_ringOrbitRadius=195;
+			var uranus_ringOrbitAngle=267;
+			var uranus_ringOrbitSpeed =0.4;
+			
+			//Caracteristicas de Netuno
+			var neptuneOrbitRadius=225;
+			var neptuneOrbitAngle=192;
+			var neptuneOrbitSpeed =0.3;
+			
+			
+			//Caracteristicas de Plutão
+			var plutoOrbitRadius=250;
+			var plutoOrbitAngle=100;
+			var plutoOrbitSpeed =0.3;
+			
+			//Variável auxiliar para armazenar o ângulo em radianos
+			var orbitAngleInRadians;
+			
+			//Variável auxiliar ajudar no cálculo da posição da Lua
+			var auxX;
+			var auxZ;
+			
+
+			
+			//Variável auxiliar para ajudar no alinhamento dos aneis de Saturno e Uranu
+			var a=1;
+			
+			
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+				
+				//O uso do mouse e do scroll(se ele foi usado) é atualizado pelo.
+				controls.update();
+				
+				
+				//Na primeira passagem de tempo os aneis de Saturno e Uranu são alinhados horizontalmente(tendo em vista que suas posições iniciais são diagonais)
+				if(a == 1){
+					saturn_ring.rotateX(1.6);
+					uranus_ring.rotateX(1.6);
+					a=0;
+				};
+				
+				
+				
+				//Cálculo das novas posições do eixo X e Z de Mercúrio
+				
+				// Para formar o novo ângulo é necessário somar o ângulo antigo com a velocidade ângulalar
+				mercuryOrbitAngle += mercuryOrbitSpeed;
+				//O novo ângulo é convertido para radianos
+				orbitAngleInRadians = mercuryOrbitAngle * Math.PI / 180;
+				//Com o ângulo em radianos é possível calcular a novo posição do eixo X e Z.
+				mercury.position.x = Math.cos(orbitAngleInRadians) * mercuryOrbitRadius; 
+				mercury.position.z = Math.sin(orbitAngleInRadians) * mercuryOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z de Vénus
+				venusOrbitAngle += venusOrbitSpeed;
+				orbitAngleInRadians = venusOrbitAngle * Math.PI / 180; 
+				venus.position.x = Math.cos(orbitAngleInRadians) * venusOrbitRadius; 
+				venus.position.z = Math.sin(orbitAngleInRadians) * venusOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z da Terra
+				earthOrbitAngle += earthOrbitSpeed;
+				orbitAngleInRadians = earthOrbitAngle * Math.PI / 180; 
+				earth.position.x = Math.cos(orbitAngleInRadians) * earthOrbitRadius; 
+				earth.position.z = Math.sin(orbitAngleInRadians) * earthOrbitRadius;
+				
+				
+				//Cálculo das novas posições do eixo X e Z da Lua
+				
+				//É necessário atualizar a posição da Lua em relação a da Terra.Tendo em vista que sua posição  
+				//tem de ser atualizado tanto em relação ao Sol quanto a da Terra
+				auxX=moon.position.x-earth.position.x;
+				auxZ=moon.position.z-earth.position.z;
+
+				moonOrbitAngle += moonOrbitSpeed;
+				orbitAngleInRadians = moonOrbitAngle * Math.PI / 180; 
+				auxX = Math.cos(orbitAngleInRadians) * moonOrbitRadius; 
+				auxZ = Math.sin(orbitAngleInRadians) * moonOrbitRadius;
+				
+				moon.position.x=auxX+earth.position.x;
+				moon.position.z=auxZ+earth.position.z;
+				
+				
+				//Cálculo das novas posições do eixo X e Z de Marte
+				marsOrbitAngle += marsOrbitSpeed;
+				orbitAngleInRadians = marsOrbitAngle * Math.PI / 180; 
+				mars.position.x = Math.cos(orbitAngleInRadians) * marsOrbitRadius; 
+				mars.position.z = Math.sin(orbitAngleInRadians) * marsOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z de Saturno
+				saturnOrbitAngle += saturnOrbitSpeed;
+				orbitAngleInRadians = saturnOrbitAngle * Math.PI / 180; 
+				saturn.position.x = Math.cos(orbitAngleInRadians) * saturnOrbitRadius; 
+				saturn.position.z = Math.sin(orbitAngleInRadians) * saturnOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z dos aneis de  Saturno
+				saturn_ringOrbitAngle += saturn_ringOrbitSpeed;
+				orbitAngleInRadians = saturn_ringOrbitAngle * Math.PI / 180; 
+				saturn_ring.position.x = Math.cos(orbitAngleInRadians) * saturn_ringOrbitRadius; 
+				saturn_ring.position.z = Math.sin(orbitAngleInRadians) * saturn_ringOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z de Jupiter				
+				jupiterOrbitAngle += jupiterOrbitSpeed;
+				orbitAngleInRadians = jupiterOrbitAngle * Math.PI / 180; 
+				jupiter.position.x = Math.cos(orbitAngleInRadians) * jupiterOrbitRadius; 
+				jupiter.position.z = Math.sin(orbitAngleInRadians) * jupiterOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z de Uranu
+				uranusOrbitAngle += uranusOrbitSpeed;
+				orbitAngleInRadians = uranusOrbitAngle * Math.PI / 180; 
+				uranus.position.x = Math.cos(orbitAngleInRadians) * uranusOrbitRadius; 
+				uranus.position.z = Math.sin(orbitAngleInRadians) * uranusOrbitRadius;
+				
+				//Cálculo das novas posições do eixo X e Z dos aneis de  Uranu
+				uranus_ringOrbitAngle += uranus_ringOrbitSpeed;
+				orbitAngleInRadians = uranus_ringOrbitAngle * Math.PI / 180; 
+				uranus_ring.position.x = Math.cos(orbitAngleInRadians) * uranus_ringOrbitRadius; 
+				uranus_ring.position.z = Math.sin(orbitAngleInRadians) * uranus_ringOrbitRadius;
+				
+				
+				//Cálculo das novas posições do eixo X e Z de Netuno
+				neptuneOrbitAngle += neptuneOrbitSpeed;
+				orbitAngleInRadians = neptuneOrbitAngle * Math.PI / 180; 
+				neptune.position.x = Math.cos(orbitAngleInRadians) * neptuneOrbitRadius; 
+				neptune.position.z = Math.sin(orbitAngleInRadians) * neptuneOrbitRadius;
+				
+				
+				//Cálculo das novas posições do eixo X e Z de Plutão
+				plutoOrbitAngle += plutoOrbitSpeed;
+				orbitAngleInRadians = plutoOrbitAngle * Math.PI / 180; 
+				pluto.position.x = Math.cos(orbitAngleInRadians) * plutoOrbitRadius; 
+				pluto.position.z = Math.sin(orbitAngleInRadians) * plutoOrbitRadius;
+				
+				
+				//Movimento de rotação dos planetas ao redor de seu próprio eixo.
+				mercury.rotateY(0.01);
+				venus.rotateY(0.01);
+				earth.rotateY(0.01);
+				mars.rotateY(0.01);
+				saturn.rotateY(0.01);
+				jupiter.rotateY(0.01);
+				uranus.rotateY(0.01);
+				neptune.rotateY(0.01);
+				pluto.rotateY(0.01);
+				
+				//Movimento de rotação dos aneis ao redor de seus respectivos planetas.
+				saturn_ring.rotateZ(0.01);
+				uranus_ring.rotateZ(0.01);
+				
+				//A cena e a câmera são enviadas para serem renderizadas.
+				renderer.render(scene, camera);
+			};
+
+			animate();	
+			
+		</script>
+	</body>
+</html>
